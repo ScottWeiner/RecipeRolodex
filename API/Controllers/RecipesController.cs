@@ -67,4 +67,78 @@ public class RecipesController : ControllerBase
 
         return CreatedAtAction(nameof(GetRecipeById), new { newRecipe.Id }, _mapper.Map<RecipeFullDto>(newRecipe));
     }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult<RecipeFullDto>> UpdateRecipe(int id, RecipeFullDto recipeDto)
+    {
+        var recipeToUpdate = await _context.Recipe.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (recipeToUpdate == null || recipeToUpdate.Id != id)
+        {
+            return NotFound("Recipe not found!");
+        }
+
+        recipeToUpdate.Title = recipeDto.Title;
+        recipeToUpdate.Servings = recipeDto.Servings;
+
+
+        _context.RecipeDetails.RemoveRange(_context.RecipeDetails.Where(x => x.RecipeId == id));
+        await _context.SaveChangesAsync();
+
+        foreach (var detail in recipeDto.Details)
+        {
+            var newDetail = _mapper.Map<RecipeDetail>(detail);
+            newDetail.RecipeId = id;
+            _context.RecipeDetails.Add(newDetail);
+        }
+
+
+
+
+
+        _context.RecipeSteps.RemoveRange(_context.RecipeSteps.Where(x => x.RecipeId == id));
+        await _context.SaveChangesAsync();
+
+        foreach (var step in recipeDto.Steps)
+        {
+            var newStep = _mapper.Map<RecipeSteps>(step);
+            newStep.RecipeId = id;
+            _context.RecipeSteps.AddRange(newStep);
+        }
+
+        var successful = await _context.SaveChangesAsync() > 0;
+
+        if (successful)
+        {
+            return Ok();
+        }
+
+        return BadRequest("There was an error while trying to save updates");
+
+
+
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteRecipie(int id)
+    {
+        var recipeToDelete = await _context.Recipe.Include(x => x.Details).Include(x => x.Steps).FirstOrDefaultAsync(x => x.Id == id);
+        if (recipeToDelete == null)
+        {
+            return NotFound();
+        }
+
+        _context.Recipe.Remove(recipeToDelete);
+
+        var successful = await _context.SaveChangesAsync() > 0;
+
+        if (successful)
+        {
+            return Ok();
+        }
+
+        return BadRequest("There was an issue saving your change");
+
+
+    }
 }

@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using API.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Net.Http.Headers;
 
 
 namespace API.Data
@@ -17,6 +19,8 @@ namespace API.Data
         }
 
         public DbSet<Recipe> Recipe { get; set; }
+        public DbSet<RecipeDetail> RecipeDetails { get; set; }
+        public DbSet<RecipeSteps> RecipeSteps { get; set; }
 
 
     }
