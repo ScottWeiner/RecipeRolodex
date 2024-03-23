@@ -21,13 +21,24 @@ public class RecipesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<RecipeHeaderDto>>> GetAllRecipes()
+    public async Task<ActionResult<List<RecipeHeaderDto>>> GetAllRecipes([FromQuery] string searchString)
     {
-        var recipes = await _context.Recipe.OrderBy(x => x.Id).ToListAsync();
 
-        if (recipes == null)
+        List<Recipe> recipes;
+        Console.WriteLine(string.IsNullOrEmpty(searchString));
+
+        if (string.IsNullOrEmpty(searchString))
         {
-            return BadRequest("No recipes found!");
+            recipes = await _context.Recipe.OrderBy(x => x.Id).ToListAsync();
+
+        }
+        else
+        {
+            var lowerCaseSearchString = searchString.Trim().ToLower();
+            Console.WriteLine(lowerCaseSearchString);
+            recipes = await _context.Recipe.Where(x => x.Title.Contains(lowerCaseSearchString)).ToListAsync(); ;
+
+
         }
 
 
@@ -47,7 +58,6 @@ public class RecipesController : ControllerBase
         return _mapper.Map<RecipeFullDto>(recipe);
     }
 
-    //TODO: Create endpoint for retrieving recipes by a search term
 
     [HttpPost]
     public async Task<ActionResult<RecipeFullDto>> CreateRecipe(CreateRecipeFullDto createRecipeDto)
