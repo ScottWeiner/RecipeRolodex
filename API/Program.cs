@@ -20,6 +20,13 @@ builder.Services.AddDbContext<DataContext>(opt =>
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Allow", policy =>
+    {
+        policy.AllowAnyOrigin();
+    });
+});
 
 var app = builder.Build();
 
@@ -33,6 +40,8 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 //app.UseAuthorization();
+
+app.UseCors("Allow");
 
 app.MapControllers();
 

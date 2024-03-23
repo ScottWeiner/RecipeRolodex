@@ -47,6 +47,8 @@ public class RecipesController : ControllerBase
         return _mapper.Map<RecipeFullDto>(recipe);
     }
 
+    //TODO: Create endpoint for retrieving recipes by a search term
+
     [HttpPost]
     public async Task<ActionResult<RecipeFullDto>> CreateRecipe(CreateRecipeFullDto createRecipeDto)
     {
