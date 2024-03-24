@@ -11,7 +11,7 @@ interface SearchPageProps {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
     const { term } = searchParams
 
-    console.log(term)
+
 
     if (!term) {
         redirect('/')
