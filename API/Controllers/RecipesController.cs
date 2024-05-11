@@ -83,7 +83,7 @@ public class RecipesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult<RecipeFullDto>> UpdateRecipe(int id, RecipeFullDto recipeDto)
     {
-        var recipeToUpdate = await _context.Recipe.FirstOrDefaultAsync(x => x.Id == id);
+        var recipeToUpdate = await _context.Recipe.Include(d => d.Details).Include(s => s.Steps).FirstOrDefaultAsync(x => x.Id == id);
 
         if (recipeToUpdate == null || recipeToUpdate.Id != id)
         {
@@ -94,28 +94,61 @@ public class RecipesController : ControllerBase
         recipeToUpdate.Servings = recipeDto.Servings;
 
 
-        _context.RecipeDetails.RemoveRange(_context.RecipeDetails.Where(x => x.RecipeId == id));
-        await _context.SaveChangesAsync();
+        //TODO: Refactor the logic to update Details & Steps into a single function since they do basically the same thing....
 
+        // Go through each Detail provided in the DTO & update or add it.
         foreach (var detail in recipeDto.Details)
         {
-            var newDetail = _mapper.Map<RecipeDetail>(detail);
-            newDetail.RecipeId = id;
-            _context.RecipeDetails.Add(newDetail);
+            var existingDetail = recipeToUpdate.Details.FirstOrDefault(x => x.Id == detail.Id);
+            if (existingDetail != null)
+            {
+                //Update the existing detail
+                _mapper.Map(detail, existingDetail);
+            }
+            else
+            {
+                //Add new detail
+                var newDetail = _mapper.Map<RecipeDetail>(detail);
+                recipeToUpdate.Details.Add(newDetail);
+            }
+
+        }
+
+        //Go through Details in the Data that are not in the DTO, and remove (absense in the DTO implies deletion by user)
+        foreach (var existingDetail in recipeToUpdate.Details.ToList())
+        {
+            if (!recipeDto.Details.Any(d => d.Id == existingDetail.Id))
+            {
+                _context.RecipeDetails.Remove(existingDetail);
+            }
         }
 
 
-
-
-
-        _context.RecipeSteps.RemoveRange(_context.RecipeSteps.Where(x => x.RecipeId == id));
-        await _context.SaveChangesAsync();
-
+        //Do the same for Steps
         foreach (var step in recipeDto.Steps)
         {
-            var newStep = _mapper.Map<RecipeSteps>(step);
-            newStep.RecipeId = id;
-            _context.RecipeSteps.AddRange(newStep);
+            var existingStep = recipeToUpdate.Steps.FirstOrDefault(x => x.Id == step.Id);
+            if (existingStep != null)
+            {
+                //Update the existing detail
+                _mapper.Map(step, existingStep);
+            }
+            else
+            {
+                //Add new detail
+                var newStep = _mapper.Map<RecipeSteps>(step);
+                recipeToUpdate.Steps.Add(newStep);
+            }
+
+        }
+
+        //Go through Details in the Data that are not in the DTO, and remove (absense in the DTO implies deletion by user)
+        foreach (var existingStep in recipeToUpdate.Steps.ToList())
+        {
+            if (!recipeDto.Steps.Any(d => d.Id == existingStep.Id))
+            {
+                _context.RecipeSteps.Remove(existingStep);
+            }
         }
 
         var successful = await _context.SaveChangesAsync() > 0;
