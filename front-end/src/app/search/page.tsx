@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 import RecipesList from '@/components/recipes-list'
+import Link from "next/link";
 //import { fetchPostsBySearchTerm } from "@/db/queries/posts";
 
 interface SearchPageProps {
@@ -18,6 +19,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     }
 
     return (
-        <div>Search Page!</div>
+       
+       
+        <div className="drop-shadow-lg rounded bg-gray-200 h-full border p-2">
+             <Link href='/'>Go back</Link>
+             <p>Search Results Go Here!!</p>
+        </div>
+       
     )
 }
