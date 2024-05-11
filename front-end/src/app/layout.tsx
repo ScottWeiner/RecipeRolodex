@@ -8,6 +8,7 @@ import "./globals.css"
 import Sidebar from "@/components/sidebar";
 
 
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -32,6 +33,7 @@ export default function RootLayout({
                  <Sidebar/>
                 </div>
                 <div className="col col-span-3">
+                  
                 {children} 
                 </div>          
             </ div>
